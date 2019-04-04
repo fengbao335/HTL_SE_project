@@ -1,0 +1,55 @@
+#headBg {
+    height: 150px;
+    background-image: url(../navImg.jpg);
+/*
+    background-repeat: repeat;
+    background-attachment: fixed;
+*/
+    text-align: center;
+}
+#headBg h1{
+    margin-top: 0;
+    margin-bottom: 5px;
+    color: aliceblue;
+    padding-top: 40px;
+    font-size: 50px;
+}
+#headBg p {
+    padding-top: 0;
+    color: aliceblue;
+    font-size: 20px;
+}
+
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+	font-family: 'Roboto', sans-serif;
+}
+
+
+/*Side Bar style*/
+#sidebar {
+    width: 300px;
+    background: #ffffff;
+    color: #000000;
+    transition: all 0.3s;
+    padding-top: 73px;
+    margin-left: 100px;
+    height: 480px;
+    float:left;
+}
+
+#map {
+    width: 55%;
+    height: calc(100vh - 250px);
+    float: left;
+    margin-left: 70px;
+    border:1px solid red; 
+    padding:0;
+}
+
+
+
+
+
