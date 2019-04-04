@@ -26,5 +26,5 @@ config['DB']='dbbikes'
 config['USER']='HTL'
 config['PASSWORD']='HTL123456'
 
-with open('config.json', 'w') as f:
+with open('config.config', 'w') as f:
     json.dump(config, f)
