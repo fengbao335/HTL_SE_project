@@ -19,7 +19,7 @@ def root():
 @app.route("/stations")
 def get_stations():
     engine = get_db()
-    sql = "select * from stations;"
+    sql = "select * from STATIONS;"
     rows = engine.execute(sql).fetchall()
     print('#found {} stations', len(rows))
     # print(jsonify(stations=[dict(row.items()) for row in rows]))
