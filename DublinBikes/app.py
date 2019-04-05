@@ -9,8 +9,6 @@ import pymysql
 app = Flask(__name__, static_url_path='')
 app.config.from_object('config')
 
-if __name__ == "__main__":
-    app.run(debug=True)
 
 # this route simply serves 'static/index.html'
 @app.route('/')
@@ -54,6 +52,9 @@ def close_connection(exception):
     if db is not None:
         db.close()
 
+
+if __name__ == "__main__":
+    app.run(debug=True)
 
 
 
