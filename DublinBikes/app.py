@@ -16,16 +16,6 @@ def root():
     return render_template('index.html')
 
 
-@app.route("/stations")
-def get_stations():
-    engine = get_db()
-    sql = "select * from STATIONS;"
-    rows = engine.execute(sql).fetchall()
-    print('#found {} stations', len(rows))
-    # print(jsonify(stations=[dict(row.items()) for row in rows]))
-    return jsonify(stations=[dict(row.items()) for row in rows])
-
-
 def connect_to_database():
     with open('config.config', 'r') as f: #Open and read the configuration file
         config = json.load(f)       #creat a variable to store the loaded contians
@@ -53,8 +43,30 @@ def close_connection(exception):
         db.close()
 
 
+@app.route("/stations")
+def get_stations():
+    engine = get_db()
+    sql = "select * from STATIONS;"
+    rows = engine.execute(sql).fetchall()
+    print('#found {} stations', len(rows))
+
+    stations = jsonify(stations=[dict(row.items()) for row in rows])
+    return stations
+
+
+@app.route("/availability")
+def get_availability():
+    engine = get_db()
+    sql = "SELECT * from STATION;"
+    rows = engine.execute(sql).fetchall()
+    print("#found {} availability", len(rows))
+    availability = jsonify(availability=[dict(row) for row in rows])
+    return availability
+
+
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
