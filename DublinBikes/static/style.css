@@ -1,10 +1,6 @@
 #headBg {
     height: 150px;
     background-image: url(../navImg.jpg);
-/*
-    background-repeat: repeat;
-    background-attachment: fixed;
-*/
     text-align: center;
 }
 #headBg h1{
@@ -14,6 +10,7 @@
     padding-top: 40px;
     font-size: 50px;
 }
+
 #headBg p {
     padding-top: 0;
     color: aliceblue;
@@ -21,30 +18,56 @@
 }
 
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-	font-family: 'Roboto', sans-serif;
+#map {
+    width: 55%;
+    height: calc(100vh - 250px);
+    float: left;
+    margin-left: 70px;
+    /*border:1px solid ;*/
+    padding:0;
 }
 
 
-/*Side Bar style*/
 #sidebar {
     width: 300px;
     background: #ffffff;
     color: #000000;
     transition: all 0.3s;
+    text-align: center;
     padding-top: 73px;
     margin-left: 100px;
     height: 480px;
     float:left;
 }
 
-#map {
-    width: 55%;
-    height: calc(100vh - 250px);
-    float: left;
-    margin-left: 70px;
-    border:1px solid red;
-    padding:0;
-}
+/*#weathercontent {*/
+    /*display: inline-block;*/
+    /*width: 20%;*/
+    /*margin: 50px 0px 20px 0px;*/
+    /*padding: 0px;*/
+    /*font-family: juraRegular;*/
+    /*background-color: rgb(81, 198, 108);*/
+    /*color: white;*/
+    /*box-shadow: 0 4px 8px 0 rgba(11, 11, 11, 0.63), 0 6px 20px 0 rgba(0, 0, 0, 0.19);*/
+    /*animation: fadeIn 2s;*/
+/*}*/
+
+/*.daily-display:hover {*/
+    /*background-color: rgb(26, 141, 53);*/
+    /*cursor: pointer;*/
+/*}*/
+
+/*.daily-display img {*/
+
+    /*display: inline;*/
+    /*position: relative;*/
+    /*bottom: -13px;*/
+/*}*/
+
+/*.daily-display p {*/
+    /*display: block;*/
+/*}*/
+
+/*.daily-display h2 {*/
+    /*display: inline;*/
+/*}*/
