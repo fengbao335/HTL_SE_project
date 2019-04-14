@@ -1,79 +1,96 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Map</title>
-
+<head>
     <meta charset="utf-8">
+    <title>Dublin Bikes App</title>
 
     <link href="../style.css" rel="stylesheet" type="text/css">
-
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.0/jquery.min.js"></script>
-
-    <meta name="viewport" content="initial-scale=1.0,user-scalable=no">
     <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
 	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
 	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
-    <style>
 
-  </style>
-  </head>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.0/jquery.min.js"></script>
+    <meta name="viewport" content="initial-scale=1.0,user-scalable=no">
 
-  <body>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+
+
+</head>
+
+<body>
+
     <div id="headBg" style="margin-bottom:0">
-        <h1>Dublin Bikes</h1>
-        <p>Find your best station!</p>
-      </div>
+            <h1>Dublin Bikes</h1>
+            <p>Find your best station!</p>
+          </div>
 
     <nav class="navbar navbar-inverse">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="#">Dublin Bikes.</a>
-        </div>
-        <div class="collapse navbar-collapse" id="myNavbar">
-          <ul class="nav navbar-nav">
-            <li class="active"><a href="#">Home</a></li>
-            <li><a href="#">Details</a></li>
-          </ul>
-        </div>
-      </div>
-    </nav>
+          <div class="container-fluid">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="#">Dublin Bikes.</a>
+            </div>
+            <div class="collapse navbar-collapse" id="myNavbar">
+              <ul class="nav navbar-nav">
+                <li class="active"><a href="#">Home</a></li>
+                <li><a href="#">Details</a></li>
+              </ul>
+            </div>
+          </div>
+        </nav>
 
     <div id="map"></div>
 
+
+
+
     <div id="sidebar">
-			<div class="sidebar-content">
 
-				<div class="form-group">
-					<label id="locationWarning" for="userLocation">Couldn't locate you. Please enter your location below:</label>
-					<input type="text" class="form-control" id="userLocation" placeholder="Enter your location">
-					<br/>
-				</div>
-				<button type="button" id='showSearchButton' class="btn btn-primary btn-block" data-bind="click:showSearch">Let me enter a location</button>
-				<button type="button" class="btn btn-primary btn-block" data-bind="click:findBike">Find Me a Bike</button>
-				<button type="button" class="btn btn-primary btn-block" data-bind="click:findStation">Find Me a Station</button>
-				<input id='predictiveCheckBox' type='checkbox'>Use our predictive api for bike finding?
-				<div id='mapOptions'>
-					<input id='bikeLayerCheckBox' type='checkbox' onchange="showHideBikeLayer(this)">Show bike lanes?
-				</div>
 
-			</div>
-        </div>
+                <h3> The current weather is: </h3>
+                <p id="currentTemp"></p>
+                <p id="currentWeather"></p>
+                <p id="windSpeed"></p>
+                <div id="icon"></div>
 
-    <script type="text/javascript">
+{#            <div class="search">#}
+{##}
+{#                <input type="text" class="form-control" id="userLocation" placeholder="Enter your location">#}
+{#                <br/>#}
+{##}
+{#				<button type="button" id='showSearchButton' class="btn btn-primary btn-block" data-bind="click:showSearch">Let me enter a location</button>#}
+{#				<button type="button" class="btn btn-primary btn-block" data-bind="click:findBike">Find Me a Bike</button>#}
+{#				<button type="button" class="btn btn-primary btn-block" data-bind="click:findStation">Find Me a Station</button>#}
+{#				<div id='mapOptions'>#}
+{#					<input id='bikeLayerCheckBox' type='checkbox' onchange="showHideBikeLayer(this)">Show bike lanes?#}
+{#				</div>#}
+
+         </div>
+
+         <div class="container2">
+           <div id="display" class="polaroid">
+                    <p id="availability"></p>
+           </div>
+           <div class="stats" id ="daily_div"></div>
+           <div class="stats" id="hourly_div"></div>
+           </div>
+
+<script type="text/javascript">
+
+
     function initMap() {
-        google.charts.load("current", {
-            packages: ["corechart"]
-        });
+        google.charts.load("visualization", "1", {packages:["corechart"]});
+
         // ROOT is the location of our flask app
         // https://developer.mozilla.org/en-US/docs/Web/API/Window/location#Properties
         ROOT = window.location.origin;
         // radius units are metres
-        radius = 20, zoom = 14;
+        radius = 23, zoom = 14;
         var centre = {
             lat: 53.346763,
             lng: -6.2568436
@@ -82,6 +99,7 @@
             zoom: zoom,
             center: centre
         });
+        var infoWindow = new google.maps.InfoWindow();
         $.getJSON('http://127.0.0.1:5000/stations', null, function (data) {
             var stations = data.stations;
             console.log(stations)
@@ -94,17 +112,72 @@
                     },
                     map: map,
                     title: station.name,
-                    station_number: station.number
+                    number: station.number
                 });
+                marker.metadata = {type: "point", id: station.number};
+                google.maps.event.addListener(marker, 'click', (function(marker, stations) {
+                    return function() {
+                        if (station.banking == 1) {
+                            station.banking = "Yes";
+                        } else {
+                            station.banking = "No";
+                        }
+						var number = station.number;
+                    	var content = "Station name: " + station.name + "<br><br>" + "Banking: " + station.banking + "<br><br>" + "Available Bikes: " + station.available_bikes + "<br><br>" + "Available Bike Stands: " + station.available_bike_stands + "<br>";
+                        var button = "<button onclick='showDiv(); getOccupancy(" + number + ")'>Show More Information</button>";
+                        infoWindow.setContent(content + "<br> " + button);
+                        infoWindow.open(map, marker);
+                    }
+                })(marker, stations));
             });
         });
     }
-    </script>
-    <script type="text/javascript"
-        src="https://www.gstatic.com/charts/loader.js"></script>
-    <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD_GFOa8RKF4FM4SkpVD6LJdz0fI86pIac&callback=initMap"
-            type="text/javascript"></script>
 
-  </body>
+
+function showDiv(){
+    div = document.getElementById("display");
+    div.style.display = "inline-block";
+}
+
+
+    getWeather();
+
+
+    function getWeather(){
+    //call weather API from openweathermap
+        var weatherdata;
+        $.getJSON('http://api.openweathermap.org/data/2.5/weather?q=Dublin,ie&units=metric&appid=5508cb29a72478e8bc8021bbe590ee4e',function(data){
+        var weather = data.weather[0].description;
+        var temp=data.main.temp;
+        var windSpeed=data.wind.speed;
+        var icon = data.weather[0].icon;
+        var iconUrl = ("<img src='http://openweathermap.org/img/w/" + icon + ".png'>");
+
+        $("#currentWeather").html(weather);
+        $("#currentTemp").html(temp + " Degrees Centigrade");
+        $("#windSpeed").html(windSpeed + " m/s");
+        $("#icon").html(iconUrl);
+
+        })
+    }
+
+    {#function getOccupancy(number) {#}
+    {#document.getElementById("availability").style.display = "inline-block";#}
+    {#var jqxhr = $.getJSON("http://dbbikes.c48xjvxqywhq.us-east-1.rds.amazonaws.com/STATION?number=" + number + "\"", null, function(data){#}
+    {#    var station_details = data.stations;#}
+    {#    _.forEach(station_details, function(station){#}
+    {#        var content = "<b><u>Station:</u></b> <br><br> Address: " + station.address + "<br><br>" + "<b><u>Currently there are: </u></b><br><br> Bikes available: " + station.available_bikes +"<br>" + "Bike stands available: " + station.available_bike_stands + "<br>";#}
+    {#        document.getElementById("availability").innerHTML = content;#}
+    {#    })#}
+    {#});}#}
+
+</script>
+
+<script type="text/javascript"
+        src="https://www.gstatic.com/charts/loader.js"></script>
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD_GFOa8RKF4FM4SkpVD6LJdz0fI86pIac&callback=initMap"
+        type="text/javascript">
+</script>
+</body>
 </html>
