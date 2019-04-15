@@ -9,13 +9,18 @@
 	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
 	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
-
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.0/jquery.min.js"></script>
     <meta name="viewport" content="initial-scale=1.0,user-scalable=no">
 
     <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 
+    <script type="text/javascript"
+        src="https://www.gstatic.com/charts/loader.js"></script>
+    <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD_GFOa8RKF4FM4SkpVD6LJdz0fI86pIac&callback=initMap"
+            type="text/javascript">
+    </script>
 
 </head>
 
@@ -46,48 +51,26 @@
 
     <div id="map"></div>
 
-
-
-
     <div id="sidebar">
 
+        <h3> The current weather is: </h3>
+            <p id="currentTemp"></p>
+            <p id="currentWeather"></p>
+            <p id="windSpeed"></p>
+            <div id="icon"></div>
+            <div id="display" class="polaroid">
+                <div id="occupancy"></div>
+            </div>
+            <div class="stats" id ="daily_div"></div>
+            <div class="stats" id="hourly_div"></div>
+    </div>
 
-                <h3> The current weather is: </h3>
-                <p id="currentTemp"></p>
-                <p id="currentWeather"></p>
-                <p id="windSpeed"></p>
-                <div id="icon"></div>
-
-{#            <div class="search">#}
-{##}
-{#                <input type="text" class="form-control" id="userLocation" placeholder="Enter your location">#}
-{#                <br/>#}
-{##}
-{#				<button type="button" id='showSearchButton' class="btn btn-primary btn-block" data-bind="click:showSearch">Let me enter a location</button>#}
-{#				<button type="button" class="btn btn-primary btn-block" data-bind="click:findBike">Find Me a Bike</button>#}
-{#				<button type="button" class="btn btn-primary btn-block" data-bind="click:findStation">Find Me a Station</button>#}
-{#				<div id='mapOptions'>#}
-{#					<input id='bikeLayerCheckBox' type='checkbox' onchange="showHideBikeLayer(this)">Show bike lanes?#}
-{#				</div>#}
-
-         </div>
-
-         <div class="container2">
-           <div id="display" class="polaroid">
-                    <p id="availability"></p>
-           </div>
-           <div class="stats" id ="daily_div"></div>
-           <div class="stats" id="hourly_div"></div>
-           </div>
 
 <script type="text/javascript">
 
 
     function initMap() {
-        google.charts.load("visualization", "1", {packages:["corechart"]});
-
         // ROOT is the location of our flask app
-        // https://developer.mozilla.org/en-US/docs/Web/API/Window/location#Properties
         ROOT = window.location.origin;
         // radius units are metres
         radius = 23, zoom = 14;
@@ -123,8 +106,8 @@
                             station.banking = "No";
                         }
 						var number = station.number;
-                    	var content = "Station name: " + station.name + "<br><br>" + "Banking: " + station.banking + "<br><br>" + "Available Bikes: " + station.available_bikes + "<br><br>" + "Available Bike Stands: " + station.available_bike_stands + "<br>";
-                        var button = "<button onclick='showDiv(); getOccupancy(" + number + ")'>Show More Information</button>";
+                    	var content = "Station name: " + station.name + "<br><br>" + "Banking: " + station.banking + "<br><br>";
+                        var button = "<button onclick='getOccupancy(" + number + ")'>Show More Information</button>";
                         infoWindow.setContent(content + "<br> " + button);
                         infoWindow.open(map, marker);
                     }
@@ -133,15 +116,7 @@
         });
     }
 
-
-function showDiv(){
-    div = document.getElementById("display");
-    div.style.display = "inline-block";
-}
-
-
     getWeather();
-
 
     function getWeather(){
     //call weather API from openweathermap
@@ -161,23 +136,53 @@ function showDiv(){
         })
     }
 
-    {#function getOccupancy(number) {#}
-    {#document.getElementById("availability").style.display = "inline-block";#}
-    {#var jqxhr = $.getJSON("http://dbbikes.c48xjvxqywhq.us-east-1.rds.amazonaws.com/STATION?number=" + number + "\"", null, function(data){#}
-    {#    var station_details = data.stations;#}
-    {#    _.forEach(station_details, function(station){#}
-    {#        var content = "<b><u>Station:</u></b> <br><br> Address: " + station.address + "<br><br>" + "<b><u>Currently there are: </u></b><br><br> Bikes available: " + station.available_bikes +"<br>" + "Bike stands available: " + station.available_bike_stands + "<br>";#}
-    {#        document.getElementById("availability").innerHTML = content;#}
-    {#    })#}
-    {#});}#}
 
+    google.charts.load("visualization", "1", {packages:["corechart"]});
+
+
+    function getOccupancy(number) {
+        document.getElementById("occupancy").style.display = "inline-block";
+        $.getJSON("http://127.0.0.1:5000/occupancy/" + number, null, function (data) {
+            var occupancy = data.occupancy;
+            _.forEach(occupancy, function (station) {
+                var content = "<b><u>Currently there are: </u></b><br><br> Bikes available: " + station.available_bikes + "<br>" + "Bike stands available: " + station.available_bike_stands + "<br></div>";
+                document.getElementById("occupancy").innerHTML = content;
+            })
+        });
+
+        $.getJSON("http://127.0.0.1:5000/daily/" + number, null, function (data) {
+            google.charts.setOnLoadCallback(drawChart(data));
+        });
+
+        function drawChart(data) {
+            var data_array_bikes = data.week_average_bikes;
+            var data_array_stands = data.week_average_stands;
+            var data_daily = new google.visualization.DataTable(data_array_bikes);
+
+            data_daily.addColumn('string', 'Day');
+            data_daily.addColumn('number', 'Bikes');
+            data_daily.addColumn('number', 'Stands');
+
+            data_daily.addRows([
+                ['Monday', data_array_bikes[0], data_array_stands[0]],
+                ['Tuesday', data_array_bikes[1], data_array_stands[1]],
+                ['Wednesday', data_array_bikes[2], data_array_stands[2]],
+                ['Thursday', data_array_bikes[3], data_array_stands[3]],
+                ['Friday', data_array_bikes[4], data_array_stands[4]],
+                ['Saturday', data_array_bikes[5], data_array_stands[5]],
+                ['Sunday', data_array_bikes[6], data_array_stands[6]]
+            ]);
+
+            //Set chart options
+            var options = {'title': 'Daily Averages:', 'width': 500, 'height': 400};
+
+            //instantiate and draw our chart, passing in some options
+            var chart = new google.visualization.BarChart(document.getElementById('daily_div'));
+            chart.draw(data_daily, options);
+        }
+    }
 </script>
 
-<script type="text/javascript"
-        src="https://www.gstatic.com/charts/loader.js"></script>
-<script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD_GFOa8RKF4FM4SkpVD6LJdz0fI86pIac&callback=initMap"
-        type="text/javascript">
-</script>
+
 </body>
 </html>
