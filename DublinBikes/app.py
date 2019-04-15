@@ -1,9 +1,12 @@
 #!/usr/bin/env python
-from flask import Flask, render_template, g, jsonify
+from flask import Flask, render_template, g, jsonify, request
 import requests
 import json
 from sqlalchemy import create_engine
+import pandas as pd
 import pymysql
+import time
+
 
 # Create our flask app. Static files are served from 'static' directory
 app = Flask(__name__, static_url_path='')
@@ -54,14 +57,44 @@ def get_stations():
     return stations
 
 
-@app.route("/availability")
-def get_availability():
+@app.route("/occupancy/<int:station_id>")
+def get_occupancy(station_id):
     engine = get_db()
-    sql = "SELECT * from STATION;"
+    data = []
+    sql = "SELECT available_bikes, available_bike_stands FROM STATION where number={};".format(station_id)
+    details = engine.execute(sql).fetchall()
+    for row in details:
+        data.append(dict(row))
+    return jsonify(occupancy=data)
+
+
+@app.route("/daily/<int:station_id>")
+def week_chart(station_id):
+    engine = get_db()
+    sql = "SELECT available_bikes, available_bike_stands, last_update FROM STATION where number={};".format(station_id)
     rows = engine.execute(sql).fetchall()
-    print("#found {} availability", len(rows))
-    availability = jsonify(availability=[dict(row) for row in rows])
-    return availability
+    week_average_bikes = []
+    week_average_stands = []
+    days = [0, 1, 2, 3, 4, 5, 6]
+    for day in days:
+        week_average_bikes.append(day_avg(rows, day)[0])
+        week_average_stands.append(day_avg(rows, day)[1])
+    daily = jsonify(week_average_bikes=week_average_bikes, week_average_stands=week_average_stands)
+    return daily
+
+
+def day_avg(rows, day):
+    available_bikes = []
+    available_bike_stands = []
+    for row in rows:
+        unix_stamp = time.localtime(int(row["last_update"]))
+        weekday = int(time.strftime("%w", unix_stamp))
+        if weekday == day:
+            available_bikes.append(row["available_bikes"])
+            available_bike_stands.append(row["available_bike_stands"])
+    day_avg_bikes = int(round((sum(available_bikes) / len(available_bikes)), 0))
+    day_avg_bike_stands = int(round((sum(available_bike_stands) / len(available_bike_stands)), 0))
+    return day_avg_bikes, day_avg_bike_stands
 
 
 if __name__ == "__main__":
