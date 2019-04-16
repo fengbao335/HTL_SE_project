@@ -64,6 +64,7 @@
             <p id="windSpeed"></p>
             <div id="icon"></div>
             <div id="display" class="polaroid">
+                <p>_________________________</p>
                 <div id="occupancy"></div>
             </div>
             <div class="stats" id ="daily_div"></div>
@@ -88,15 +89,13 @@
             center: centre
         });
         var infoWindow = new google.maps.InfoWindow();
-        $.getJSON('http://127.0.0.1:5000/stations', null, function (data) {
+        $.getJSON('http://127.0.0.1:5000/dynamic_stations', null, function (data) {
             var stations = data.stations;
-            console.log(stations)
             $.each(stations, function (i,station) {
-                // console.log(station.name, station.number);
                 var marker = new google.maps.Marker({
                     position: {
-                        lat: station.position_lat,
-                        lng: station.position_lng
+                        lat: station.position.lat,
+                        lng: station.position.lng
                     },
                     map: map,
                     title: station.name,
@@ -111,8 +110,8 @@
                             station.banking = "No";
                         }
 						var number = station.number;
-                    	var content = "Station name: " + station.name + "<br><br>" + "Banking: " + station.banking + "<br><br>";
-                        var button = "<button onclick='getOccupancy(" + number + ")'>Show More Information</button>";
+                    	var content = "Station name: " + station.name + "<br><br>" + "Banking: " + station.banking + "<br><br>" + "Available Bikes: " + station.available_bikes + "<br><br>" + "Available Bike Stands: " + station.available_bike_stands + "<br><br>" + "Status: " + station.status + "<br>";
+                        var button = "<button onclick='daily_chart(" + number + ")'>Show Daily Chart</button>";
                         infoWindow.setContent(content + "<br> " + button);
                         infoWindow.open(map, marker);
                     }
@@ -121,11 +120,11 @@
         });
     }
 
-    getWeather();
+    get_weather();
 
-    function getWeather(){
+    function get_weather(){
     //call weather API from openweathermap
-        var weatherdata;
+
         $.getJSON('http://api.openweathermap.org/data/2.5/weather?q=Dublin,ie&units=metric&appid=5508cb29a72478e8bc8021bbe590ee4e',function(data){
         var weather = data.weather[0].description;
         var temp=data.main.temp;
@@ -145,15 +144,8 @@
     google.charts.load("visualization", "1", {packages:["corechart"]});
 
 
-    function getOccupancy(number) {
-        document.getElementById("occupancy").style.display = "inline-block";
-        $.getJSON("http://127.0.0.1:5000/occupancy/" + number, null, function (data) {
-            var occupancy = data.occupancy;
-            _.forEach(occupancy, function (station) {
-                var content = "<b><u>Currently there are: </u></b><br><br> Bikes available: " + station.available_bikes + "<br>" + "Bike stands available: " + station.available_bike_stands + "<br></div>";
-                document.getElementById("occupancy").innerHTML = content;
-            })
-        });
+    function daily_chart(number) {
+
 
         $.getJSON("http://127.0.0.1:5000/daily/" + number, null, function (data) {
             google.charts.setOnLoadCallback(drawChart(data));
@@ -185,6 +177,7 @@
             var chart = new google.visualization.BarChart(document.getElementById('daily_div'));
             chart.draw(data_daily, options);
         }
+
     }
 </script>
 
