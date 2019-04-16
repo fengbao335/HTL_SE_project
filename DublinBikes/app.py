@@ -45,26 +45,37 @@ def close_connection(exception):
         db.close()
 
 
-@app.route("/stations")
-def get_stations():
-    engine = get_db()
-    sql = "select * from STATIONS;"
-    rows = engine.execute(sql).fetchall()
-    print('#found {} stations', len(rows))
+@app.route("/dynamic_stations")
+def dynamic_stations():
+    APIKEY = '5979ce80578015211c5630d5d3762548e5eba68d'
+    NAME = "Dublin"
+    STATIONS_URI = "https://api.jcdecaux.com/vls/v1/stations"
+    temp = requests.get(STATIONS_URI, params={"apiKey": APIKEY, "contract": NAME})
+    stations_detail = json.loads(temp.text)
+    return jsonify(stations=stations_detail)
 
-    stations = jsonify(stations=[dict(row.items()) for row in rows])
-    return stations
 
 
-@app.route("/occupancy/<int:station_id>")
-def get_occupancy(station_id):
-    engine = get_db()
-    data = []
-    sql = "SELECT available_bikes, available_bike_stands FROM STATION where number={};".format(station_id)
-    details = engine.execute(sql).fetchall()
-    for row in details:
-        data.append(dict(row))
-    return jsonify(occupancy=data)
+# @app.route("/stations")
+# def get_stations():
+#     engine = get_db()
+#     sql = "select * from STATIONS;"
+#     rows = engine.execute(sql).fetchall()
+#     print('#found {} stations', len(rows))
+#
+#     stations = jsonify(stations=[dict(row.items()) for row in rows])
+#     return stations
+
+
+# @app.route("/occupancy/<int:station_id>")
+# def get_occupancy(station_id):
+#     engine = get_db()
+#     data = []
+#     sql = "SELECT available_bikes, available_bike_stands FROM STATION where number={};".format(station_id)
+#     details = engine.execute(sql).fetchall()
+#     for row in details:
+#         data.append(dict(row))
+#     return jsonify(occupancy=data)
 
 
 @app.route("/daily/<int:station_id>")
