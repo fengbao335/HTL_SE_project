@@ -3,7 +3,6 @@ from flask import Flask, render_template, g, jsonify, request
 import requests
 import json
 from sqlalchemy import create_engine
-import pandas as pd
 import pymysql
 import time
 
@@ -95,6 +94,14 @@ def day_avg(rows, day):
     day_avg_bikes = int(round((sum(available_bikes) / len(available_bikes)), 0))
     day_avg_bike_stands = int(round((sum(available_bike_stands) / len(available_bike_stands)), 0))
     return day_avg_bikes, day_avg_bike_stands
+
+
+# @app.route("/hourly/<int:station_id>")
+# def week_chart(station_id):
+#     engine = get_db()
+#     sql = "SELECT available_bikes, available_bike_stands, last_update FROM STATION where number={},;".format(station_id)
+#     rows = engine.execute(sql).fetchall()
+
 
 
 if __name__ == "__main__":
