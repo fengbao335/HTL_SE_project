@@ -14,8 +14,14 @@ app.config.from_object('config')
 
 # this route simply serves 'static/index.html'
 @app.route('/')
+@app.route('/index')
 def root():
     return render_template('index.html')
+
+
+@app.route('/predict_forecast')
+def page2():
+    return render_template('predict_forecast.html')
 
 
 def connect_to_database():
