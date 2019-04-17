@@ -5,18 +5,19 @@
     <title>Dublin Bikes App</title>
 
     <link href="../style.css" rel="stylesheet" type="text/css">
+    <script type="text/javascript" src="../main.js"></script>
+
+{#    navigation bar#}
     <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
 	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
 	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
-
+    
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.0/jquery.min.js"></script>
-    <meta name="viewport" content="initial-scale=1.0,user-scalable=no">
 
     <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
-    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
-
-    <script type="text/javascript"
-        src="https://www.gstatic.com/charts/loader.js"></script>
+{#    调取google.visualization#}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+{#    used to import google map#}
     <script async defer
             src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD_GFOa8RKF4FM4SkpVD6LJdz0fI86pIac&callback=initMap"
             type="text/javascript">
@@ -48,105 +49,48 @@
             </div>
           </div>
         </nav>
-{##}
-{#    <a class="weatherwidget-io" href="https://forecast7.com/en/53d35n6d26/dublin/" data-label_1="DUBLIN" data-label_2="WEATHER" data-theme="weather_one" >DUBLIN WEATHER</a>#}
-{#    <script>#}
-{#    !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');#}
-{#    </script>#}
 
     <div id="map"></div>
 
     <div id="sidebar">
 
-        <h3> The current weather is: </h3>
-            <p id="currentTemp"></p>
-            <p id="currentWeather"></p>
-            <p id="windSpeed"></p>
-            <div id="icon"></div>
-            <div id="display" class="polaroid">
-                <p>_________________________</p>
-                <div id="occupancy"></div>
-            </div>
-            <div class="stats" id ="daily_div"></div>
-            <div class="stats" id="hourly_div"></div>
+        <div id="weather">
+        <div id="icon"></div><p id="currentWeather"></p>
+            <p id="currentTemp"></p><p id="windSpeed"></p>
+            <br>
+        </div>
+
+        <div class="charts" id ="daily_div"></div>
+
     </div>
 
-
-<script type="text/javascript">
-
-
-    function initMap() {
-        // ROOT is the location of our flask app
-        ROOT = window.location.origin;
-        // radius units are metres
-        radius = 23, zoom = 14;
-        var centre = {
-            lat: 53.346763,
-            lng: -6.2568436
-        };
-        map = new google.maps.Map(document.getElementById('map'), {
-            zoom: zoom,
-            center: centre
-        });
-        var infoWindow = new google.maps.InfoWindow();
-        $.getJSON('http://127.0.0.1:5000/dynamic_stations', null, function (data) {
-            var stations = data.stations;
-            $.each(stations, function (i,station) {
-                var marker = new google.maps.Marker({
-                    position: {
-                        lat: station.position.lat,
-                        lng: station.position.lng
-                    },
-                    map: map,
-                    title: station.name,
-                    number: station.number
-                });
-                marker.metadata = {type: "point", id: station.number};
-                google.maps.event.addListener(marker, 'click', (function(marker, stations) {
-                    return function() {
-                        if (station.banking == 1) {
-                            station.banking = "Yes";
-                        } else {
-                            station.banking = "No";
-                        }
-						var number = station.number;
-                    	var content = "Station name: " + station.name + "<br><br>" + "Banking: " + station.banking + "<br><br>" + "Available Bikes: " + station.available_bikes + "<br><br>" + "Available Bike Stands: " + station.available_bike_stands + "<br><br>" + "Status: " + station.status + "<br>";
-                        var button = "<button onclick='daily_chart(" + number + ")'>Show Daily Chart</button>";
-                        infoWindow.setContent(content + "<br> " + button);
-                        infoWindow.open(map, marker);
-                    }
-                })(marker, stations));
-            });
-        });
-    }
+<script>
 
     get_weather();
 
     function get_weather(){
     //call weather API from openweathermap
 
-        $.getJSON('http://api.openweathermap.org/data/2.5/weather?q=Dublin,ie&units=metric&appid=5508cb29a72478e8bc8021bbe590ee4e',function(data){
-        var weather = data.weather[0].description;
-        var temp=data.main.temp;
-        var windSpeed=data.wind.speed;
-        var icon = data.weather[0].icon;
-        var iconUrl = ("<img src='http://openweathermap.org/img/w/" + icon + ".png'>");
+    $.getJSON('http://api.openweathermap.org/data/2.5/weather?q=Dublin,ie&units=metric&appid=5508cb29a72478e8bc8021bbe590ee4e',function(data){
+    var weather = data.weather[0].description;
+    var temp=data.main.temp;
+    var windSpeed=data.wind.speed;
+    var icon = data.weather[0].icon;
+    var iconUrl = ("<img src='http://openweathermap.org/img/w/" + icon + ".png'>");
 
-        $("#currentWeather").html(weather);
-        $("#currentTemp").html(temp + " Degrees Centigrade");
-        $("#windSpeed").html(windSpeed + " m/s");
-        $("#icon").html(iconUrl);
+    $("#icon").html(iconUrl);
+    $("#currentWeather").html("Current Weather: " + weather);
+    $("#currentTemp").html("Tempreture: " + temp + " Degrees Centigrade");
+    $("#windSpeed").html("Wind Speed: " + windSpeed + " m/s");
+
 
         })
     }
 
 
-    google.charts.load("visualization", "1", {packages:["corechart"]});
-
-
     function daily_chart(number) {
 
-
+        google.charts.load("visualization", "1", {packages:["corechart"]});
         $.getJSON("http://127.0.0.1:5000/daily/" + number, null, function (data) {
             google.charts.setOnLoadCallback(drawChart(data));
         });
@@ -171,7 +115,7 @@
             ]);
 
             //Set chart options
-            var options = {'title': 'Daily Averages:', 'width': 500, 'height': 400};
+            var options = {'title': 'Daily Averages:', 'width': 450, 'height': 400};
 
             //instantiate and draw our chart, passing in some options
             var chart = new google.visualization.BarChart(document.getElementById('daily_div'));
@@ -180,7 +124,5 @@
 
     }
 </script>
-
-
 </body>
 </html>
