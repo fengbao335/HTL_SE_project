@@ -1,6 +1,4 @@
 
-
-
 function initMap() {
     // ROOT is the location of our flask app
     ROOT = window.location.origin;
