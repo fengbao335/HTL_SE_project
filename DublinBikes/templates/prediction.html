@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <link href="../style.css" rel="stylesheet" type="text/css">
+
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.0/jquery.min.js"></script>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+  <div id="headBg" >
+            <h1>Dublin Bikes</h1>
+            <p>Find your best station!</p>
+          </div>
+
+    <nav class="navbar navbar-inverse">
+          <div class="container-fluid">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="index.html">Dublin Bikes.</a>
+            </div>
+            <div class="collapse navbar-collapse" id="myNavbar">
+              <ul class="nav navbar-nav">
+                <li><a href="index">Home</a></li>
+                <li class="active"><a href="predict_forecast">Prediction</a></li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+
+
+<div>
+    <span id="error"></span>
+
+</div>
+<div id="search_date">
+    <input type="date" name="date" id="date">
+    <input type="time" name="time" id="time">
+    <button onclick="display()" type="button">Show forecast</button>
+    <div id="show_forecast">
+    </div>
+</div>
+</div>
+<script type="text/javascript">
+
+function display(){
+    //call weather API from openweathermap
+
+    $.getJSON('http://api.openweathermap.org/data/2.5/forecast?appid=9511c6f09bf671d3bd65bf650197234f&q=Dublin',function(data){
+    var date = document.getElementById("date").innerText;
+    var date = document.getElementById("time").innerText;
+    alert(date);
+    console.log(time);
+
+        });
+    }
+</script>
+</body>
+</html>

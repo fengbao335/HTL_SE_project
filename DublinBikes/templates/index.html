@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
 	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
 	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
     
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.0/jquery.min.js"></script>
 
@@ -43,12 +44,13 @@
             </div>
             <div class="collapse navbar-collapse" id="myNavbar">
               <ul class="nav navbar-nav">
-                <li class="active"><a href="#">Home</a></li>
-                <li><a href="#">Details</a></li>
+                <li class="active"><a href="index">Home</a></li>
+                <li><a href="predict_forecast">Prediction</a></li>
               </ul>
             </div>
           </div>
         </nav>
+
 
     <div id="map"></div>
 
@@ -84,7 +86,7 @@
     $("#windSpeed").html("Wind Speed: " + windSpeed + " m/s");
 
 
-        })
+        });
     }
 
 
