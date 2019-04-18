@@ -5,7 +5,7 @@
     <title>Dublin Bikes App</title>
 
     <link href="../style.css" rel="stylesheet" type="text/css">
-    <script type="text/javascript" src="../main.js"></script>
+{#    <script type="text/javascript" src="../main.js"></script>#}
 
 {#    navigation bar#}
     <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
@@ -66,7 +66,108 @@
 
     </div>
 
+
+
+
 <script>
+
+
+function initMap() {
+    // ROOT is the location of our flask app
+    ROOT = window.location.origin;
+    // radius units are metres
+    radius = 23, zoom = 14;
+    var centre = {
+        lat: 53.346763,
+        lng: -6.2568436
+    };
+    map = new google.maps.Map(document.getElementById('map'), {
+        zoom: zoom,
+        center: centre
+    });
+    var infoWindow = new google.maps.InfoWindow();
+    $.getJSON('http://127.0.0.1:5000/dynamic_stations', null, function (data) {
+        var stations = data.stations;
+        $.each(stations, function (i,station) {
+            var marker = new google.maps.Marker({
+                position: {
+                    lat: station.position.lat,
+                    lng: station.position.lng
+                },
+                icon: {
+                  url: "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+                }
+                map: map,
+                title: station.name,
+                number: station.number
+            });
+            marker.metadata = {type: "point", id: station.number};
+            google.maps.event.addListener(marker, 'click', (function(marker, stations) {
+                return function() {
+                    if (station.banking == 1) {
+                        station.banking = "Yes";
+                    } else {
+                        station.banking = "No";
+                    }
+                    let number = station.number;
+                    let station_name = station.name;
+                    let available_bikes = station.available_bikes;
+                    let available_bike_stands = station.available_bike_stands;
+                    let station_bank = station.banking;
+                    let station_status = station.status;
+
+
+                    var content =
+                        '<div id="info">\n' +
+                        '        <p>Station name: '+ station_name +'</p>\n' +
+                        '\n' +
+                        '        <p>Available Bikes: '+ available_bikes +'</p>\n' +
+                        '\n' +
+                        '        <p>Available Bike Stands: '+ available_bike_stands +'</p>\n' +
+                        '\n' +
+                        '        <p>Banking: '+ station_bank +'</p>\n' +
+                        '\n' +
+                        '        <p>Status: '+ station_status +'</p>\n' +
+                        '        <br>\n' +
+                        '        <button onclick=daily_chart(' + number + ') style="display: inline">Past</button>\n' +
+                        '        <button id="info_btn" onclick=info_btn() style="display: inline">Now</button>\n' +
+                        '        <button id="prediction_btn" onclick=prediction_btn() style="display: inline">Prediction</button>\n' +
+                        '    </div>\n' +
+                        '    <div id="prediction" style="display:none;">\n' +
+                        '        <input type="date" name="date" id="prediction_date">\n' +
+                        '        <select id="prediction_time">\n' +
+                        '            <option value="00:00:00">00:00:00</option>\n' +
+                        '            <option value="03:00:00">03:00:00</option>\n' +
+                        '            <option value="06:00:00">06:00:00</option>\n' +
+                        '            <option value="09:00:00">09:00:00</option>\n' +
+                        '            <option value="12:00:00">12:00:00</option>\n' +
+                        '            <option value="15:00:00">15:00:00</option>\n' +
+                        '            <option value="18:00:00">18:00:00</option>\n' +
+                        '            <option value="21:00:00">21:00:00</option>\n' +
+                        '        </select>\n' +
+                        '        <br>\n' +
+                        '        <button onclick=show_forecast() type="button">Show Weather Forecast</button>\n' +
+                        '        <div id="weather_prediction">\n' +
+                        '        </div>\n' +
+                        '        <button onclick=show_occupancy_prediction(' + number + ') type="button">Show Bikes Prediction</button>\n' +
+                        '        <div id="occupancy_prediction">\n' +
+                        '        </div>\n' +
+                        '        <button onclick=daily_chart(' + number + ') style="display: inline">Past</button>\n' +
+                        '        <button id="info_btn" onclick=info_btn() style="display: inline">Now</button>\n' +
+                        '        <button id="prediction_btn" onclick=prediction_btn() style="display: inline">Prediction</button>\n' +
+                        '    </div>';
+                    infoWindow.setContent(content);
+                    infoWindow.open(map, marker);
+                }
+            })(marker, stations));
+        });
+    });
+}
+
+
+
+
+
 
     get_weather();
 
@@ -82,7 +183,7 @@
 
     $("#icon").html(iconUrl);
     $("#currentWeather").html("Current Weather: " + weather);
-    $("#currentTemp").html("Tempreture: " + temp + " Degrees Centigrade");
+    $("#currentTemp").html("Tempreture: " + temp + " °C");
     $("#windSpeed").html("Wind Speed: " + windSpeed + " m/s");
 
 
@@ -98,22 +199,22 @@
         });
 
         function drawChart(data) {
-            var data_array_bikes = data.week_average_bikes;
-            var data_array_stands = data.week_average_stands;
-            var data_daily = new google.visualization.DataTable(data_array_bikes);
+            var avg_bikes = data.week_average_bikes;
+            var avg_stands = data.week_average_stands;
+            var daily = new google.visualization.DataTable(avg_bikes);
 
-            data_daily.addColumn('string', 'Day');
-            data_daily.addColumn('number', 'Bikes');
-            data_daily.addColumn('number', 'Stands');
+            daily.addColumn('string', 'Day');
+            daily.addColumn('number', 'Bikes');
+            daily.addColumn('number', 'Stands');
 
-            data_daily.addRows([
-                ['Monday', data_array_bikes[0], data_array_stands[0]],
-                ['Tuesday', data_array_bikes[1], data_array_stands[1]],
-                ['Wednesday', data_array_bikes[2], data_array_stands[2]],
-                ['Thursday', data_array_bikes[3], data_array_stands[3]],
-                ['Friday', data_array_bikes[4], data_array_stands[4]],
-                ['Saturday', data_array_bikes[5], data_array_stands[5]],
-                ['Sunday', data_array_bikes[6], data_array_stands[6]]
+            daily.addRows([
+                ['Sunday', avg_bikes[0], avg_stands[0]],
+                ['Monday', avg_bikes[1], avg_stands[1]],
+                ['Tuesday', avg_bikes[2], avg_stands[2]],
+                ['Wednesday', avg_bikes[3], avg_stands[3]],
+                ['Thursday', avg_bikes[4], avg_stands[4]],
+                ['Friday', avg_bikes[5], avg_stands[5]],
+                ['Saturday', avg_bikes[6], avg_stands[6]]
             ]);
 
             //Set chart options
@@ -121,10 +222,48 @@
 
             //instantiate and draw our chart, passing in some options
             var chart = new google.visualization.BarChart(document.getElementById('daily_div'));
-            chart.draw(data_daily, options);
+            chart.draw(daily, options);
+        }
+    }
+
+    function prediction_btn() {
+            document.getElementById('info').style.display = 'none';
+            document.getElementById('prediction').style.display = 'block';
         }
 
-    }
+        function info_btn() {
+            document.getElementById('info').style.display = 'block';
+            document.getElementById('prediction').style.display = 'none';
+        }
+
+        function show_forecast() {
+            var date = document.getElementById("prediction_date").value;
+            var time = document.getElementById("prediction_time").value;
+            var show = document.getElementById("weather_prediction");
+            $.getJSON('http://api.openweathermap.org/data/2.5/forecast?appid=9511c6f09bf671d3bd65bf650197234f&units=metric&q=Dublin', function(data) {
+                var result = data.list;
+                for (i = 0; i <
+                    result.length; i++) {
+                    var temp = result[i].main.temp;
+                    var weather = result[i].weather[0].main;
+                    var wind = result[i].wind.speed;
+                    var target = result[i].dt_txt;
+                    if (target == date + " " + time) {
+                        show.innerHTML = ("Weather: " + weather + " <br />" + "Temperture: " + temp + " °C" + "<br />" + "Wind Speed: " + wind + " m/s");
+                    }
+                }
+            });
+        }
+
+        function show_occupancy_prediction(number, time) {
+            var time = document.getElementById("prediction_time").value;
+            var int_hour = Number(time.slice(0, 2));
+            console.log(int_hour);
+            $.getJSON("http://127.0.0.1:5000/bikes_prediction/" + number + "/" + int_hour, null, function(data) {
+                var show = document.getElementById("occupancy_prediction");
+                show.innerHTML = ("Available Bikes: " + data.bp);
+            });
+        }
 </script>
 </body>
 </html>
