@@ -5,6 +5,9 @@ import json
 from sqlalchemy import create_engine
 import pymysql
 import time
+import pandas as pd
+import numpy as np
+import pickle
 
 
 # Create our flask app. Static files are served from 'static' directory
@@ -99,6 +102,28 @@ def day_avg(rows, day):
     day_avg_bikes = int(round((sum(available_bikes) / len(available_bikes)), 0))
     day_avg_bike_stands = int(round((sum(available_bike_stands) / len(available_bike_stands)), 0))
     return day_avg_bikes, day_avg_bike_stands
+
+
+@app.route("/bikes_prediction/<int:station_id>/<int:time_hour>")
+def bikes_prediction(station_id,time_hour):
+    r = requests.get('http://api.openweathermap.org/data/2.5/forecast?appid=9511c6f09bf671d3bd65bf650197234f&q=Dublin')
+    weathers = r.json()
+    weather_detalis = weathers["list"]
+    temp = weather_detalis[0]['main']['temp']
+    wind = weather_detalis[0]['wind']['speed']
+    main = weather_detalis[0]['weather'][0]['main']
+    weather_Drizzle = 0
+    weather_Rain = 0
+    if main == 'Drizzle':
+        weather_Drizzle = 1
+    elif main == 'Rain':
+        weather_Rain = 1
+    f2 = pd.DataFrame(np.array([station_id,time_hour, temp, wind, weather_Drizzle, weather_Rain])).T
+    models = {}
+    with open('static/pickle/'+str(station_id) + ".pkl", "rb") as handle:
+        models[station_id] = pickle.load(handle)
+    available_bikes_prediction = models[station_id].predict(f2).round()[0]
+    return jsonify(bp=available_bikes_prediction)
 
 
 if __name__ == "__main__":
